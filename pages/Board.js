@@ -1,3 +1,12 @@
+/* eslint-disable max-len */
+/* eslint-disable react/jsx-indent-props */
+/* eslint-disable no-mixed-operators */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable arrow-parens */
+/* eslint-disable react/jsx-indent */
+/* eslint-disable object-curly-newline */
+/* eslint-disable indent */
+/* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { Component } from 'react';
 import { Set, List, fromJS } from 'immutable';
