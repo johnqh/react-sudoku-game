@@ -11,7 +11,9 @@
 /* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import { fromJS } from 'immutable';
+import { List, fromJS } from 'immutable';
+
+import { makePuzzle, pluck, isPeer as areCoordinatePeers, range } from '../sudoku';
 
 /**
  * make size 9 array of 0s
@@ -88,7 +90,7 @@ export function isConflict(board, i, j) {
 	return rowConflict || columnConflict || squareConflict;
 }
 
-export function fillNumberInBoard(oldBoard, selectedCell, number) {
+export function fillNumber(oldBoard, selectedCell, number) {
 	let board = oldBoard;
 	// no-op if nothing is selected
 	if (!selectedCell) return;
@@ -119,4 +121,64 @@ export function fillNumberInBoard(oldBoard, selectedCell, number) {
 		});
 	}
 	return board;
+}
+
+export function fillSelectedWithSolution(board, solution, selectedCell) {
+	if (!selectedCell) return;
+	const { x, y } = board.get('selected');
+	return solution[x][y];
+}
+
+export function addNumberAsNote(board, selectedCell, number) {
+	if (!selectedCell) return;
+	const prefilled = selectedCell.get('prefilled');
+	if (prefilled) return;
+	const { x, y } = board.get('selected');
+	const currentValue = selectedCell.get('value');
+	if (currentValue) {
+		board = updateBoardWithNumber({
+			x,
+			y,
+			number: currentValue,
+			fill: false,
+			board,
+		});
+	}
+	let notes = selectedCell.get('notes') || Set();
+	if (notes.has(number)) {
+		notes = notes.delete(number);
+	} else {
+		notes = notes.add(number);
+	}
+	let cell = selectedCell.set('notes', notes);
+	cell = cell.delete('value');
+	return board.setIn(['puzzle', x, y], cell);
+}
+
+function getNumberOfGroupsAssignedForNumber(number, groups) {
+	return groups.reduce((accumulator, row) => accumulator + (row.get(number) > 0 ? 1 : 0), 0);
+}
+
+// get the min between its completion in rows, columns and squares.
+export function getNumberValueCount(board, number) {
+	const rows = board.getIn(['choices', 'rows']);
+	const columns = board.getIn(['choices', 'columns']);
+	const squares = board.getIn(['choices', 'squares']);
+	return Math.min(getNumberOfGroupsAssignedForNumber(number, squares), Math.min(getNumberOfGroupsAssignedForNumber(number, rows), getNumberOfGroupsAssignedForNumber(number, columns)));
+}
+
+export function generateGame(finalCount = 20) {
+	console.log('generating');
+	// get a filled puzzle generated
+	const solution = makePuzzle();
+	// pluck values from cells to create the game
+	const { puzzle } = pluck(solution, finalCount);
+	// initialize the board with choice counts
+	const board = makeBoard({ puzzle });
+	return {
+		board,
+		history: List.of(board),
+		historyOffSet: 0,
+		solution,
+	};
 }

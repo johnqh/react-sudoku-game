@@ -10,11 +10,8 @@
 /* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { Component } from 'react';
-import { Set, List, fromJS } from 'immutable';
-import PropTypes from 'prop-types';
+import { Set, List } from 'immutable';
 import NextHead from 'next/head';
-import Color from 'color';
-import InputRange from 'react-input-range';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import css from 'styled-jsx/css';
@@ -26,14 +23,13 @@ import ReloadIcon from '../svg/reload.svg';
 import ReturnIcon from '../svg/return.svg';
 
 import { makePuzzle, pluck, isPeer as areCoordinatePeers, range } from '../sudoku';
-import { backGroundBlue } from '../colors';
 import Tip from '../components/tool-tip';
 
 import Cell from './Cell';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
 import { cellWidth } from './utils';
-import { makeBoard, updateBoardWithNumber, selectCell, isConflict, fillNumberInBoard } from './functions';
+import { makeBoard, updateBoardWithNumber, selectCell, isConflict, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
@@ -123,9 +119,6 @@ function getClickHandler(onClick, onDoubleClick, delay = 250) {
 	};
 }
 
-function getNumberOfGroupsAssignedForNumber(number, groups) {
-	return groups.reduce((accumulator, row) => accumulator + (row.get(number) > 0 ? 1 : 0), 0);
-}
 // eslint-disable-next-line react/no-multi-comp
 export default class Index extends Component {
 	state = {};
@@ -151,33 +144,14 @@ export default class Index extends Component {
 		return selected && board.get('puzzle').getIn([selected.x, selected.y]);
 	}
 
-	// get the min between its completion in rows, columns and squares.
-	getNumberValueCount(number) {
-		const rows = this.state.board.getIn(['choices', 'rows']);
-		const columns = this.state.board.getIn(['choices', 'columns']);
-		const squares = this.state.board.getIn(['choices', 'squares']);
-		return Math.min(getNumberOfGroupsAssignedForNumber(number, squares), Math.min(getNumberOfGroupsAssignedForNumber(number, rows), getNumberOfGroupsAssignedForNumber(number, columns)));
-	}
-
 	generateGame = (finalCount = 20) => {
-		console.log('generating');
-		// get a filled puzzle generated
-		const solution = makePuzzle();
-		// pluck values from cells to create the game
-		const { puzzle } = pluck(solution, finalCount);
-		// initialize the board with choice counts
-		const board = makeBoard({ puzzle });
-		this.setState({
-			board,
-			history: List.of(board),
-			historyOffSet: 0,
-			solution,
-		});
+		this.setState(generateGame(finalCount));
 	};
 
 	addNumberAsNote = (number) => {
 		let { board } = this.state;
 		let selectedCell = this.getSelectedCell();
+
 		if (!selectedCell) return;
 		const prefilled = selectedCell.get('prefilled');
 		if (prefilled) return;
@@ -246,16 +220,15 @@ export default class Index extends Component {
 	fillSelectedWithSolution = () => {
 		const { board, solution } = this.state;
 		const selectedCell = this.getSelectedCell();
-		if (!selectedCell) return;
-		const { x, y } = board.get('selected');
-		this.fillNumber(solution[x][y]);
+
+		this.fillNumber(fillSelectedWithSolution(board, solution, selectedCell));
 	};
 
 	// fill currently selected cell with number
 	fillNumber = (number) => {
 		const selectedCell = this.getSelectedCell();
 
-		this.updateBoard(fillNumberInBoard(this.state.board, selectedCell, number));
+		this.updateBoard(fillNumber(this.state.board, selectedCell, number));
 	};
 
 	renderCell(cell, x, y) {
@@ -302,7 +275,7 @@ export default class Index extends Component {
 							this.addNumberAsNote(number);
 						}
 					);
-					return <NumberControl key={number} number={number} onClick={!prefilled ? clickHandle : undefined} completionPercentage={this.getNumberValueCount(number) / 9} />;
+					return <NumberControl key={number} number={number} onClick={!prefilled ? clickHandle : undefined} completionPercentage={getNumberValueCount(this.state.board, number) / 9} />;
 				})}
 				<style jsx>{ControlStyle}</style>
 			</div>
