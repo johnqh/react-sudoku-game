@@ -20,46 +20,16 @@ import ReturnIcon from '../svg/return.svg';
 
 import Tip from '../components/tool-tip';
 
+import { range } from '../sudoku';
+
 import Board from './Board';
 import Actions from './Actions';
+import Control from './Control';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
 import { selectCell, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
-
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const ControlStyle = css`
-	.control {
-		padding: 0 2em;
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		flex-wrap: wrap;
-		justify-content: center;
-		font-family: 'Special Elite', cursive;
-		transition: filter 0.5s ease-in-out;
-		width: 100%;
-	}
-`;
-
-function getClickHandler(onClick, onDoubleClick, delay = 250) {
-	let timeoutID = null;
-	return (event) => {
-		if (!timeoutID) {
-			timeoutID = setTimeout(() => {
-				onClick(event);
-				timeoutID = null;
-			}, delay);
-		} else {
-			timeoutID = clearTimeout(timeoutID);
-			onDoubleClick(event);
-		}
-	};
-}
 
 // eslint-disable-next-line react/no-multi-comp
 export default class Index extends Component {
@@ -148,34 +118,13 @@ export default class Index extends Component {
 		this.updateBoard(fillNumber(this.state.board, selectedCell, number));
 	};
 
-	renderNumberControl() {
-		const selectedCell = this.getSelectedCell();
-		const prefilled = selectedCell && selectedCell.get('prefilled');
-		return (
-			<div className="control">
-				{range(9).map((i) => {
-					const number = i + 1;
-					// handles binding single click and double click callbacks
-					const clickHandle = getClickHandler(
-						() => {
-							this.fillNumber(number);
-						},
-						() => {
-							this.addNumberAsNote(number);
-						}
-					);
-					return <NumberControl key={number} number={number} onClick={!prefilled ? clickHandle : undefined} completionPercentage={getNumberValueCount(this.state.board, number) / 9} />;
-				})}
-				<style jsx>{ControlStyle}</style>
-			</div>
-		);
-	}
-
 	renderControls() {
+		const { board } = this.state;
+		const selected = this.getSelectedCell();
 		return (
 			<div className="controls">
-				{this.renderNumberControl()}
-				<Actions history={this.state.history} selected={this.getSelectedCell()} undo={this.undo} redo={this.redo} erase={this.eraseSelected} solution={this.fillSelectedWithSolution} />
+				<Control board={board} selected={selected} fillNumber={this.fillNumber} fillNote={this.addNumberAsNote} />
+				<Actions history={this.state.history} selected={selected} undo={this.undo} redo={this.redo} erase={this.eraseSelected} solution={this.fillSelectedWithSolution} />
 				{/* language=CSS */}
 				<style jsx>
 					{`
@@ -261,9 +210,6 @@ export default class Index extends Component {
 					/>
 				)}
 				{board && this.renderControls()}
-				<div className="rooter">
-					Made with <span>❤️</span>️ By <a href="https://www.sitianliu.com/">Sitian Liu</a> | <a href="https://medium.com/@sitianliu_57680/building-a-sudoku-game-in-react-ca663915712">Blog Post</a>
-				</div>
 				{/* language=CSS */}
 				<style jsx>
 					{`
