@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
 /* eslint-disable react/jsx-indent-props */
 /* eslint-disable no-mixed-operators */
@@ -84,4 +86,37 @@ export function isConflict(board, i, j) {
 	const columnConflict = board.getIn(['choices', 'columns', j, value]) > 1;
 	const squareConflict = board.getIn(['choices', 'squares', Math.floor(i / 3) * 3 + Math.floor(j / 3), value]) > 1;
 	return rowConflict || columnConflict || squareConflict;
+}
+
+export function fillNumberInBoard(oldBoard, selectedCell, number) {
+	let board = oldBoard;
+	// no-op if nothing is selected
+	if (!selectedCell) return;
+	const prefilled = selectedCell.get('prefilled');
+	// no-op if it is refilled
+	if (prefilled) return;
+	const { x, y } = board.get('selected');
+	const currentValue = selectedCell.get('value');
+	// remove the current value and update the game state
+	if (currentValue) {
+		board = updateBoardWithNumber({
+			x,
+			y,
+			number: currentValue,
+			fill: false,
+			board,
+		});
+	}
+	// update to new number if any
+	const setNumber = currentValue !== number && number;
+	if (setNumber) {
+		board = updateBoardWithNumber({
+			x,
+			y,
+			number,
+			fill: true,
+			board,
+		});
+	}
+	return board;
 }

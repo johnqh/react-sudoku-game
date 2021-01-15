@@ -33,7 +33,7 @@ import Cell from './Cell';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
 import { cellWidth } from './utils';
-import { makeBoard, updateBoardWithNumber, selectCell, isConflict } from './functions';
+import { makeBoard, updateBoardWithNumber, selectCell, isConflict, fillNumberInBoard } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
@@ -253,37 +253,9 @@ export default class Index extends Component {
 
 	// fill currently selected cell with number
 	fillNumber = (number) => {
-		let { board } = this.state;
 		const selectedCell = this.getSelectedCell();
-		// no-op if nothing is selected
-		if (!selectedCell) return;
-		const prefilled = selectedCell.get('prefilled');
-		// no-op if it is refilled
-		if (prefilled) return;
-		const { x, y } = board.get('selected');
-		const currentValue = selectedCell.get('value');
-		// remove the current value and update the game state
-		if (currentValue) {
-			board = updateBoardWithNumber({
-				x,
-				y,
-				number: currentValue,
-				fill: false,
-				board: this.state.board,
-			});
-		}
-		// update to new number if any
-		const setNumber = currentValue !== number && number;
-		if (setNumber) {
-			board = updateBoardWithNumber({
-				x,
-				y,
-				number,
-				fill: true,
-				board,
-			});
-		}
-		this.updateBoard(board);
+
+		this.updateBoard(fillNumberInBoard(this.state.board, selectedCell, number));
 	};
 
 	renderCell(cell, x, y) {
