@@ -29,7 +29,8 @@ import { backGroundBlue } from '../colors';
 import Tip from '../components/tool-tip';
 
 import Cell from './Cell';
-import CirclularProgress from './Circular';
+import CirclularProgress from './CirclularProgress';
+import NumberControl from './NumberControl';
 import { cellWidth, ControlNumberColor } from './utils';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
@@ -77,29 +78,6 @@ const ControlStyle = css`
 		font-family: 'Special Elite', cursive;
 		transition: filter 0.5s ease-in-out;
 		width: 100%;
-	}
-`;
-
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const NumberControlStyle = css`
-	.number {
-		display: flex;
-		position: relative;
-		justify-content: center;
-		align-items: center;
-		font-size: 2em;
-		margin: 0.1em;
-		width: 1.5em;
-		height: 1.5em;
-		color: ${ControlNumberColor};
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.23);
-		border-radius: 50%;
-	}
-	.number > div {
-		margin-top: 0.3em;
 	}
 `;
 
@@ -203,24 +181,6 @@ class GenerationUI extends Component {
 
 GenerationUI.propTypes = {
 	generateGame: PropTypes.func.isRequired,
-};
-
-const NumberControl = ({ number, onClick, completionPercentage }) => (
-	<div key={number} className="number" onClick={onClick}>
-		<div>{number}</div>
-		<CirclularProgress percent={completionPercentage} />
-		<style jsx>{NumberControlStyle}</style>
-	</div>
-);
-
-NumberControl.propTypes = {
-	number: PropTypes.number.isRequired,
-	onClick: PropTypes.func,
-	completionPercentage: PropTypes.number.isRequired,
-};
-
-NumberControl.defaultProps = {
-	onClick: null,
 };
 
 function getClickHandler(onClick, onDoubleClick, delay = 250) {
