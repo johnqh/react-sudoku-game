@@ -16,50 +16,17 @@ import NextHead from 'next/head';
 import css from 'styled-jsx/css';
 
 import RangeStyle from '../input-range-style';
-import LoupeIcon from '../svg/loupe.svg';
-import RemoveIcon from '../svg/remove.svg';
-import ReloadIcon from '../svg/reload.svg';
 import ReturnIcon from '../svg/return.svg';
 
-import { isPeer as areCoordinatePeers, range } from '../sudoku';
 import Tip from '../components/tool-tip';
 
 import Board from './Board';
-import Cell from './Cell';
+import Actions from './Actions';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
-import { cellWidth } from './utils';
-import { selectCell, isConflict, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
+import { selectCell, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
-
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const ActionsStyle = css`
-	.actions {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		max-width: 400px;
-		margin-top: 0.5em;
-		padding: 0 0.6em;
-	}
-	.action {
-		display: flex;
-		align-items: center;
-		flex-direction: column;
-	}
-	.action :global(svg) {
-		width: 2.5em;
-		margin-bottom: 0.2em;
-	}
-	.redo :global(svg) {
-		transform: scaleX(-1);
-	}
-`;
 
 // eslint-disable-next-line no-lone-blocks
 {
@@ -76,31 +43,6 @@ const ControlStyle = css`
 		font-family: 'Special Elite', cursive;
 		transition: filter 0.5s ease-in-out;
 		width: 100%;
-	}
-`;
-
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const PuzzleStyle = css`
-	.puzzle {
-		margin-top: 0.5em;
-		width: ${cellWidth * 9}em;
-		cursor: pointer;
-		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-	}
-	.row {
-		display: flex;
-		align-items: center;
-		flex: 0;
-		width: ${cellWidth * 9}em;
-	}
-	.row:not(:last-child) {
-		border-bottom: 1px solid black;
-	}
-	.row:nth-child(3n + 3):not(:last-child) {
-		border-bottom: 2px solid black !important;
 	}
 `;
 
@@ -229,38 +171,11 @@ export default class Index extends Component {
 		);
 	}
 
-	renderActions() {
-		const { history } = this.state;
-		const selectedCell = this.getSelectedCell();
-		const prefilled = selectedCell && selectedCell.get('prefilled');
-		return (
-			<div className="actions">
-				<div className="action" onClick={history.size ? this.undo : null}>
-					<ReloadIcon />
-					Undo
-				</div>
-				<div className="action redo" onClick={history.size ? this.redo : null}>
-					<ReloadIcon />
-					Redo
-				</div>
-				<div className="action" onClick={!prefilled ? this.eraseSelected : null}>
-					<RemoveIcon />
-					Erase
-				</div>
-				<div className="action" onClick={!prefilled ? this.fillSelectedWithSolution : null}>
-					<LoupeIcon />
-					Hint
-				</div>
-				<style jsx>{ActionsStyle}</style>
-			</div>
-		);
-	}
-
 	renderControls() {
 		return (
 			<div className="controls">
 				{this.renderNumberControl()}
-				{this.renderActions()}
+				<Actions history={this.state.history} selected={this.getSelectedCell()} undo={this.undo} redo={this.redo} erase={this.eraseSelected} solution={this.fillSelectedWithSolution} />
 				{/* language=CSS */}
 				<style jsx>
 					{`
