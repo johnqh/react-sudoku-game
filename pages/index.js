@@ -33,7 +33,7 @@ import Cell from './Cell';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
 import { cellWidth } from './utils';
-import { makeBoard, updateBoardWithNumber } from './functions';
+import { makeBoard, updateBoardWithNumber, selectCell, isConflict } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
@@ -286,26 +286,11 @@ export default class Index extends Component {
 		this.updateBoard(board);
 	};
 
-	selectCell = (x, y) => {
-		let { board } = this.state;
-		board = board.set('selected', { x, y });
-		this.setState({ board });
-	};
-
-	isConflict(i, j) {
-		const { value } = this.state.board.getIn(['puzzle', i, j]).toJSON();
-		if (!value) return false;
-		const rowConflict = this.state.board.getIn(['choices', 'rows', i, value]) > 1;
-		const columnConflict = this.state.board.getIn(['choices', 'columns', j, value]) > 1;
-		const squareConflict = this.state.board.getIn(['choices', 'squares', Math.floor(i / 3) * 3 + Math.floor(j / 3), value]) > 1;
-		return rowConflict || columnConflict || squareConflict;
-	}
-
 	renderCell(cell, x, y) {
 		const { board } = this.state;
 		const selected = this.getSelectedCell();
 		const { value, prefilled, notes } = cell.toJSON();
-		const conflict = this.isConflict(x, y);
+		const conflict = isConflict(this.state.board, x, y);
 		const peer = areCoordinatePeers({ x, y }, board.get('selected'));
 		const sameValue = !!(selected && selected.get('value') && value === selected.get('value'));
 
@@ -319,7 +304,7 @@ export default class Index extends Component {
 				isPeer={peer}
 				value={value}
 				onClick={() => {
-					this.selectCell(x, y);
+					this.setState({ board: selectCell(this.state.board, x, y) });
 				}}
 				key={y}
 				x={x}

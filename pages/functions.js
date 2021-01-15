@@ -72,3 +72,16 @@ export function updateBoardWithNumber({ x, y, number, fill = true, board }) {
 		.setIn(squarePath, board.getIn(squarePath) + increment)
 		.setIn(['puzzle', x, y], cell);
 }
+
+export function selectCell(board, x, y) {
+	return board.set('selected', { x, y });
+}
+
+export function isConflict(board, i, j) {
+	const { value } = board.getIn(['puzzle', i, j]).toJSON();
+	if (!value) return false;
+	const rowConflict = board.getIn(['choices', 'rows', i, value]) > 1;
+	const columnConflict = board.getIn(['choices', 'columns', j, value]) > 1;
+	const squareConflict = board.getIn(['choices', 'squares', Math.floor(i / 3) * 3 + Math.floor(j / 3), value]) > 1;
+	return rowConflict || columnConflict || squareConflict;
+}
