@@ -20,14 +20,11 @@ import ReturnIcon from '../svg/return.svg';
 
 import Tip from '../components/tool-tip';
 
-import { range } from '../sudoku';
-
 import Board from './Board';
 import Actions from './Actions';
 import Control from './Control';
-import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
-import { selectCell, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
+import { selectCell, fillNumber, fillSelectedWithSolution, addNumberAsNote, generateGame } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
