@@ -1,3 +1,12 @@
+/* eslint-disable max-len */
+/* eslint-disable react/jsx-indent-props */
+/* eslint-disable no-mixed-operators */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable arrow-parens */
+/* eslint-disable react/jsx-indent */
+/* eslint-disable object-curly-newline */
+/* eslint-disable indent */
+/* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { Component } from 'react';
 import { Set, List, fromJS } from 'immutable';
@@ -19,49 +28,11 @@ import { makePuzzle, pluck, isPeer as areCoordinatePeers, range } from '../sudok
 import { backGroundBlue } from '../colors';
 import Tip from '../components/tool-tip';
 
+import Cell from './Cell';
+import CirclularProgress from './Circular';
+import { cellWidth, ControlNumberColor } from './utils';
+
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
-const cellWidth = 2.5;
-
-const LightBlue100 = '#B3E5FC';
-const LightBlue200 = '#81D4FA';
-const LightBlue300 = '#4FC3F7';
-const Indigo700 = '#303F9F';
-const DeepOrange200 = '#FFAB91';
-const DeepOrange600 = '#F4511E';
-const ControlNumberColor = Indigo700;
-
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const CellStyle = css`
-	.cell {
-		height: ${cellWidth}em;
-		width: ${cellWidth}em;
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.1em;
-		font-weight: bold;
-		transition: background-color 0.3s ease-in-out;
-	}
-	.cell:nth-child(3n + 3):not(:last-child) {
-		border-right: 2px solid black;
-	}
-	.cell:not(:last-child) {
-		border-right: 1px solid black;
-	}
-	.note-number {
-		font-size: 0.6em;
-		width: 33%;
-		height: 33%;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-`;
 
 // eslint-disable-next-line no-lone-blocks
 {
@@ -157,59 +128,6 @@ const PuzzleStyle = css`
 	}
 `;
 
-// eslint-disable-next-line no-lone-blocks
-{
-	/* language=CSS */
-}
-const CirculuarProgressStyle = css`
-	.circular-progress {
-		display: block;
-		width: 100%;
-		position: absolute;
-		top: 0;
-		left: 0;
-		transition: filter 0.4s ease-in-out;
-	}
-
-	.circle-bg {
-		fill: none;
-		stroke: #eee;
-		stroke-width: 3.8;
-	}
-
-	.circle {
-		stroke: ${ControlNumberColor};
-		transition: stroke-dasharray 0.4s ease-in-out;
-		fill: none;
-		stroke-width: 2.8;
-		stroke-linecap: round;
-	}
-`;
-
-const CircularPathD = 'M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831';
-
-function getBackGroundColor({ conflict, isPeer, sameValue, isSelected }) {
-	if (conflict && isPeer && sameValue) {
-		return DeepOrange200;
-	} else if (sameValue) {
-		return LightBlue300;
-	} else if (isSelected) {
-		return LightBlue200;
-	} else if (isPeer) {
-		return LightBlue100;
-	}
-	return false;
-}
-
-function getFontColor({ value, conflict, prefilled }) {
-	if (conflict && !prefilled) {
-		return DeepOrange600;
-	} else if (!prefilled && value) {
-		return ControlNumberColor;
-	}
-	return false;
-}
-
 class GenerationUI extends Component {
 	constructor(props) {
 		super(props);
@@ -303,75 +221,6 @@ NumberControl.propTypes = {
 
 NumberControl.defaultProps = {
 	onClick: null,
-};
-
-const Cell = (props) => {
-	const { value, onClick, isPeer, isSelected, sameValue, prefilled, notes, conflict } = props;
-	const backgroundColor = getBackGroundColor({
-		conflict,
-		isPeer,
-		sameValue,
-		isSelected,
-	});
-	const fontColor = getFontColor({ conflict, prefilled, value });
-	return (
-		<div className="cell" onClick={onClick}>
-			{notes
-				? range(9).map((i) => (
-						<div key={i} className="note-number">
-							{notes.has(i + 1) && i + 1}
-						</div>
-				  ))
-				: value && value}
-			{/* language=CSS */}
-			<style jsx>{CellStyle}</style>
-			<style jsx>
-				{`
-					.cell {
-						background-color: ${backgroundColor || 'initial'};
-						color: ${fontColor || 'initial'};
-					}
-				`}
-			</style>
-		</div>
-	);
-};
-
-Cell.propTypes = {
-	// current number value
-	value: PropTypes.number,
-	// cell click handler
-	onClick: PropTypes.func.isRequired,
-	// if the cell is a peer of the selected cell
-	isPeer: PropTypes.bool.isRequired,
-	// if the cell is selected by the user
-	isSelected: PropTypes.bool.isRequired,
-	// current cell has the same value if the user selected cell
-	sameValue: PropTypes.bool.isRequired,
-	// if this was prefilled as a part of the puzzle
-	prefilled: PropTypes.bool.isRequired,
-	// current notes taken on the cell
-	notes: PropTypes.instanceOf(Set),
-	// if the current cell does not satisfy the game constraint
-	conflict: PropTypes.bool.isRequired,
-};
-
-Cell.defaultProps = {
-	notes: null,
-	value: null,
-};
-
-const CirclularProgress = ({ percent }) => (
-	<svg viewBox="0 0 36 36" className="circular-progress">
-		<path className="circle-bg" d={CircularPathD} />
-		<path className="circle" strokeDasharray={`${percent * 100}, 100`} d={CircularPathD} />
-		{/* language=CSS */}
-		<style jsx>{CirculuarProgressStyle}</style>
-	</svg>
-);
-
-CirclularProgress.propTypes = {
-	percent: PropTypes.number.isRequired,
 };
 
 function getClickHandler(onClick, onDoubleClick, delay = 250) {
