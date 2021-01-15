@@ -1,5 +1,4 @@
 /* eslint-disable consistent-return */
-/* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
 /* eslint-disable react/jsx-indent-props */
 /* eslint-disable no-mixed-operators */
@@ -13,7 +12,7 @@
 
 import { List, fromJS } from 'immutable';
 
-import { makePuzzle, pluck, isPeer as areCoordinatePeers, range } from '../sudoku';
+import { makePuzzle, pluck } from '../sudoku';
 
 /**
  * make size 9 array of 0s
@@ -129,7 +128,9 @@ export function fillSelectedWithSolution(board, solution, selectedCell) {
 	return solution[x][y];
 }
 
-export function addNumberAsNote(board, selectedCell, number) {
+export function addNumberAsNote(oldBoard, oldSelectedCell, number) {
+	let board = oldBoard;
+	let selectedCell = oldSelectedCell;
 	if (!selectedCell) return;
 	const prefilled = selectedCell.get('prefilled');
 	if (prefilled) return;
@@ -150,9 +151,9 @@ export function addNumberAsNote(board, selectedCell, number) {
 	} else {
 		notes = notes.add(number);
 	}
-	let cell = selectedCell.set('notes', notes);
-	cell = cell.delete('value');
-	return board.setIn(['puzzle', x, y], cell);
+	selectedCell = selectedCell.set('notes', notes);
+	selectedCell = selectedCell.delete('value');
+	board = board.setIn(['puzzle', x, y], selectedCell);
 }
 
 function getNumberOfGroupsAssignedForNumber(number, groups) {

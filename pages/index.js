@@ -10,7 +10,6 @@
 /* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { Component } from 'react';
-import { Set, List } from 'immutable';
 import NextHead from 'next/head';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -22,14 +21,15 @@ import RemoveIcon from '../svg/remove.svg';
 import ReloadIcon from '../svg/reload.svg';
 import ReturnIcon from '../svg/return.svg';
 
-import { makePuzzle, pluck, isPeer as areCoordinatePeers, range } from '../sudoku';
+import { isPeer as areCoordinatePeers, range } from '../sudoku';
 import Tip from '../components/tool-tip';
 
+import Board from './Board';
 import Cell from './Cell';
 import NumberControl from './NumberControl';
 import GenerationUI from './GenerateUI';
 import { cellWidth } from './utils';
-import { makeBoard, updateBoardWithNumber, selectCell, isConflict, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
+import { selectCell, isConflict, fillNumber, fillSelectedWithSolution, addNumberAsNote, getNumberValueCount, generateGame } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
@@ -149,33 +149,8 @@ export default class Index extends Component {
 	};
 
 	addNumberAsNote = (number) => {
-		let { board } = this.state;
-		let selectedCell = this.getSelectedCell();
-
-		if (!selectedCell) return;
-		const prefilled = selectedCell.get('prefilled');
-		if (prefilled) return;
-		const { x, y } = board.get('selected');
-		const currentValue = selectedCell.get('value');
-		if (currentValue) {
-			board = updateBoardWithNumber({
-				x,
-				y,
-				number: currentValue,
-				fill: false,
-				board: this.state.board,
-			});
-		}
-		let notes = selectedCell.get('notes') || Set();
-		if (notes.has(number)) {
-			notes = notes.delete(number);
-		} else {
-			notes = notes.add(number);
-		}
-		selectedCell = selectedCell.set('notes', notes);
-		selectedCell = selectedCell.delete('value');
-		board = board.setIn(['puzzle', x, y], selectedCell);
-		this.updateBoard(board);
+		const board = addNumberAsNote(this.state.board, this.getSelectedCell(), number);
+		if (board) this.updateBoard(board);
 	};
 
 	updateBoard = (newBoard) => {
@@ -231,34 +206,6 @@ export default class Index extends Component {
 		this.updateBoard(fillNumber(this.state.board, selectedCell, number));
 	};
 
-	renderCell(cell, x, y) {
-		const { board } = this.state;
-		const selected = this.getSelectedCell();
-		const { value, prefilled, notes } = cell.toJSON();
-		const conflict = isConflict(this.state.board, x, y);
-		const peer = areCoordinatePeers({ x, y }, board.get('selected'));
-		const sameValue = !!(selected && selected.get('value') && value === selected.get('value'));
-
-		const isSelected = cell === selected;
-		return (
-			<Cell
-				prefilled={prefilled}
-				notes={notes}
-				sameValue={sameValue}
-				isSelected={isSelected}
-				isPeer={peer}
-				value={value}
-				onClick={() => {
-					this.setState({ board: selectCell(this.state.board, x, y) });
-				}}
-				key={y}
-				x={x}
-				y={y}
-				conflict={conflict}
-			/>
-		);
-	}
-
 	renderNumberControl() {
 		const selectedCell = this.getSelectedCell();
 		const prefilled = selectedCell && selectedCell.get('prefilled');
@@ -305,24 +252,6 @@ export default class Index extends Component {
 					Hint
 				</div>
 				<style jsx>{ActionsStyle}</style>
-			</div>
-		);
-	}
-
-	renderPuzzle() {
-		const { board } = this.state;
-		return (
-			<div className="puzzle">
-				{board
-					.get('puzzle')
-					.map((row, i) => (
-						// eslint-disable-next-line react/no-array-index-key
-						<div key={i} className="row">
-							{row.map((cell, j) => this.renderCell(cell, i, j)).toArray()}
-						</div>
-					))
-					.toArray()}
-				<style jsx>{PuzzleStyle}</style>
 			</div>
 		);
 	}
@@ -407,7 +336,15 @@ export default class Index extends Component {
 				</NextHead>
 				{!board && this.renderGenerationUI()}
 				{board && this.renderHeader()}
-				{board && this.renderPuzzle()}
+				{board && (
+					<Board
+						board={this.state.board}
+						selected={this.getSelectedCell()}
+						onClick={(x, y) => {
+							this.setState({ board: selectCell(this.state.board, x, y) });
+						}}
+					/>
+				)}
 				{board && this.renderControls()}
 				<div className="rooter">
 					Made with <span>❤️</span>️ By <a href="https://www.sitianliu.com/">Sitian Liu</a> | <a href="https://medium.com/@sitianliu_57680/building-a-sudoku-game-in-react-ca663915712">Blog Post</a>
