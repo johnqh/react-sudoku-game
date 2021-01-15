@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable max-len */
 /* eslint-disable react/jsx-indent-props */
 /* eslint-disable no-mixed-operators */
@@ -29,9 +30,10 @@ import { backGroundBlue } from '../colors';
 import Tip from '../components/tool-tip';
 
 import Cell from './Cell';
-import CirclularProgress from './CirclularProgress';
 import NumberControl from './NumberControl';
-import { cellWidth, ControlNumberColor } from './utils';
+import GenerationUI from './GenerateUI';
+import { cellWidth } from './utils';
+import { makeBoard, updateBoardWithNumber } from './functions';
 
 const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
@@ -106,83 +108,6 @@ const PuzzleStyle = css`
 	}
 `;
 
-class GenerationUI extends Component {
-	constructor(props) {
-		super(props);
-
-		this.state = { value: 30 };
-	}
-
-	generateGame = () => {
-		this.props.generateGame(this.state.value);
-	};
-
-	render() {
-		return (
-			<div className="generation">
-				<div className="copy">Start with {this.state.value} cells prefilled</div>
-				<InputRange maxValue={81} minValue={17} value={this.state.value} onChange={(value) => this.setState({ value })} />
-				<div className="button" onClick={this.generateGame}>
-					Play Sudoku
-				</div>
-				{/* language=CSS */}
-				<style jsx>
-					{`
-						.copy {
-							text-align: center;
-							font-size: 1.3em;
-							margin-bottom: 0.5em;
-						}
-						.generation {
-							display: flex;
-							justify-content: center;
-							flex-direction: column;
-							width: 100%;
-							align-items: center;
-						}
-						:global(.input-range) {
-							width: 80%;
-							max-width: 500px;
-						}
-						.button {
-							margin-top: 0.5em;
-							border-radius: 0.25em;
-							cursor: pointer;
-							font-weight: bold;
-							text-decoration: none;
-							color: #fff;
-							position: relative;
-							display: inline-block;
-							transition: all 0.25s;
-							padding: 5px 10px;
-							font-size: 1.4em;
-						}
-						.button:active {
-							transform: translate(0px, 5px);
-							box-shadow: 0 1px 0 0;
-						}
-
-						.button {
-							background-color: ${backGroundBlue};
-							box-shadow: 0 2px 4px 0 ${Color(backGroundBlue).darken(0.5).hsl().string()};
-							display: flex;
-							align-items: center;
-						}
-
-						.button:hover {
-							background-color: ${Color(backGroundBlue).lighten(0.2).hsl().string()};
-						}
-					`}
-				</style>
-			</div>
-		);
-	}
-}
-
-GenerationUI.propTypes = {
-	generateGame: PropTypes.func.isRequired,
-};
-
 function getClickHandler(onClick, onDoubleClick, delay = 250) {
 	let timeoutID = null;
 	return (event) => {
@@ -196,68 +121,6 @@ function getClickHandler(onClick, onDoubleClick, delay = 250) {
 			onDoubleClick(event);
 		}
 	};
-}
-
-/**
- * make size 9 array of 0s
- * @returns {Array}
- */
-function makeCountObject() {
-	const countObj = [];
-	for (let i = 0; i < 10; i += 1) countObj.push(0);
-	return countObj;
-}
-
-/**
- * given a 2D array of numbers as the initial puzzle, generate the initial game state
- * @param puzzle
- * @returns {any}
- */
-function makeBoard({ puzzle }) {
-	// create initial count object to keep track of conflicts per number value
-	const rows = Array.from(Array(9).keys()).map(() => makeCountObject());
-	const columns = Array.from(Array(9).keys()).map(() => makeCountObject());
-	const squares = Array.from(Array(9).keys()).map(() => makeCountObject());
-	const result = puzzle.map((row, i) =>
-		row.map((cell, j) => {
-			if (cell) {
-				rows[i][cell] += 1;
-				columns[j][cell] += 1;
-				squares[Math.floor(i / 3) * 3 + Math.floor(j / 3)][cell] += 1;
-			}
-			return {
-				value: puzzle[i][j] > 0 ? puzzle[i][j] : null,
-				prefilled: !!puzzle[i][j],
-			};
-		})
-	);
-	return fromJS({ puzzle: result, selected: false, choices: { rows, columns, squares } });
-}
-
-/**
- * give the coordinate update the current board with a number choice
- * @param x
- * @param y
- * @param number
- * @param fill whether to set or unset
- * @param board the immutable board given to change
- */
-function updateBoardWithNumber({ x, y, number, fill = true, board }) {
-	let cell = board.get('puzzle').getIn([x, y]);
-	// delete its notes
-	cell = cell.delete('notes');
-	// set or unset its value depending on `fill`
-	cell = fill ? cell.set('value', number) : cell.delete('value');
-	const increment = fill ? 1 : -1;
-	// update the current group choices
-	const rowPath = ['choices', 'rows', x, number];
-	const columnPath = ['choices', 'columns', y, number];
-	const squarePath = ['choices', 'squares', Math.floor(x / 3) * 3 + Math.floor(y / 3), number];
-	return board
-		.setIn(rowPath, board.getIn(rowPath) + increment)
-		.setIn(columnPath, board.getIn(columnPath) + increment)
-		.setIn(squarePath, board.getIn(squarePath) + increment)
-		.setIn(['puzzle', x, y], cell);
 }
 
 function getNumberOfGroupsAssignedForNumber(number, groups) {
@@ -297,6 +160,7 @@ export default class Index extends Component {
 	}
 
 	generateGame = (finalCount = 20) => {
+		console.log('generating');
 		// get a filled puzzle generated
 		const solution = makePuzzle();
 		// pluck values from cells to create the game
