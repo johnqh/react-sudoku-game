@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import css from 'styled-jsx/css';
 
-import Cell from './Cell';
+import CellView from './CellView';
 import { cellWidth } from './utils';
 import { isPeer as areCoordinatePeers } from '../sudoku';
 import { isConflict } from './functions';
@@ -53,7 +53,7 @@ function renderCell(board, cell, x, y, selected, onClick) {
 
 	const isSelected = cell === selected;
 	return (
-		<Cell
+		<CellView
 			prefilled={prefilled}
 			notes={notes}
 			sameValue={sameValue}
@@ -71,7 +71,7 @@ function renderCell(board, cell, x, y, selected, onClick) {
 	);
 }
 
-const Board = (props) => {
+const BoardView = (props) => {
 	const { board, selected, onClick } = props;
 
 	return (
@@ -90,14 +90,14 @@ const Board = (props) => {
 	);
 };
 
-Board.propTypes = {
+BoardView.propTypes = {
 	board: PropTypes.object.isRequired,
 	selected: PropTypes.object,
 	onClick: PropTypes.func.isRequired,
 };
 
-Board.defaultProps = {
+BoardView.defaultProps = {
 	selected: null,
 };
 
-export default Board;
+export default BoardView;

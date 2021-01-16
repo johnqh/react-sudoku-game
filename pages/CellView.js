@@ -23,7 +23,7 @@ import { getBackGroundColor, getFontColor, cellWidth } from './utils';
 {
 	/* language=CSS */
 }
-const CellStyle = css`
+const CellViewStyle = css`
 	.cell {
 		height: ${cellWidth}em;
 		width: ${cellWidth}em;
@@ -52,7 +52,7 @@ const CellStyle = css`
 	}
 `;
 
-const Cell = (props) => {
+const CellView = (props) => {
 	const { value, onClick, isPeer, isSelected, sameValue, prefilled, notes, conflict } = props;
 	const backgroundColor = getBackGroundColor({
 		conflict,
@@ -71,7 +71,7 @@ const Cell = (props) => {
 				  ))
 				: value && value}
 			{/* language=CSS */}
-			<style jsx>{CellStyle}</style>
+			<style jsx>{CellViewStyle}</style>
 			<style jsx>
 				{`
 					.cell {
@@ -84,7 +84,7 @@ const Cell = (props) => {
 	);
 };
 
-Cell.propTypes = {
+CellView.propTypes = {
 	// current number value
 	value: PropTypes.number,
 	// cell click handler
@@ -103,9 +103,9 @@ Cell.propTypes = {
 	conflict: PropTypes.bool.isRequired,
 };
 
-Cell.defaultProps = {
+CellView.defaultProps = {
 	notes: null,
 	value: null,
 };
 
-export default Cell;
+export default CellView;

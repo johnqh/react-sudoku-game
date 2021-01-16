@@ -13,7 +13,7 @@ import React, { Component } from 'react';
 
 import RangeStyle from '../input-range-style';
 
-import Board from './Board';
+import BoardView from './BoardView';
 import NextHeader from './NextHeader';
 import Header from './Header';
 import Controls from './Controls';
@@ -115,7 +115,7 @@ export default class Index extends Component {
 				{!board && <GenerationUI generateGame={this.generateGame} />}
 				{board && <Header onClick={() => this.setState({ board: false })} />}
 				{board && (
-					<Board
+					<BoardView
 						board={this.state.board}
 						selected={this.getSelectedCell()}
 						onClick={(x, y) => {
