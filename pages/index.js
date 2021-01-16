@@ -10,23 +10,15 @@
 /* eslint-disable no-tabs */
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { Component } from 'react';
-import NextHead from 'next/head';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-import css from 'styled-jsx/css';
 
 import RangeStyle from '../input-range-style';
-import ReturnIcon from '../svg/return.svg';
-
-import Tip from '../components/tool-tip';
 
 import Board from './Board';
-import Actions from './Actions';
-import Control from './Control';
+import NextHeader from './NextHeader';
+import Header from './Header';
+import Controls from './Controls';
 import GenerationUI from './GenerateUI';
 import { selectCell, fillNumber, fillSelectedWithSolution, addNumberAsNote, generateGame } from './functions';
-
-const Description = 'Discover the next evolution of Sudoku with amazing graphics, animations, and user-friendly features. Enjoy a Sudoku experience like you never have before with customizable game generation, cell highlighting, intuitive controls and more!';
 
 // eslint-disable-next-line react/no-multi-comp
 export default class Index extends Component {
@@ -115,88 +107,13 @@ export default class Index extends Component {
 		this.updateBoard(fillNumber(this.state.board, selectedCell, number));
 	};
 
-	renderControls() {
-		const { board } = this.state;
-		const selected = this.getSelectedCell();
-		return (
-			<div className="controls">
-				<Control board={board} selected={selected} fillNumber={this.fillNumber} fillNote={this.addNumberAsNote} />
-				<Actions history={this.state.history} selected={selected} undo={this.undo} redo={this.redo} erase={this.eraseSelected} solution={this.fillSelectedWithSolution} />
-				{/* language=CSS */}
-				<style jsx>
-					{`
-						.controls {
-							margin-top: 0.3em;
-							display: flex;
-							flex-wrap: wrap;
-							justify-content: center;
-							width: 100%;
-							padding: 0.5em 0;
-						}
-					`}
-				</style>
-			</div>
-		);
-	}
-
-	renderGenerationUI() {
-		return <GenerationUI generateGame={this.generateGame} />;
-	}
-
-	renderHeader() {
-		return (
-			<div className="header">
-				<div className="new-game" onClick={() => this.setState({ board: false })}>
-					<ReturnIcon />
-					<div>New Game</div>
-				</div>
-				<Tip />
-				{/* language=CSS */}
-				<style jsx>
-					{`
-						.header {
-							display: flex;
-							width: 100%;
-							justify-content: space-between;
-							max-width: 500px;
-							padding: 0 0.5em;
-							box-sizing: border-box;
-						}
-						.new-game {
-							cursor: pointer;
-							margin-top: 0.2em;
-							display: inline-flex;
-							justify-content: center;
-							align-items: center;
-							padding: 0.2em 0;
-						}
-						.new-game :global(svg) {
-							height: 1em;
-							margin-bottom: 0.3em;
-						}
-					`}
-				</style>
-			</div>
-		);
-	}
-
 	render() {
-		const { board } = this.state;
+		const { board, history } = this.state;
 		return (
 			<div className="body">
-				<NextHead>
-					<title>Sudoku Evolved</title>
-					<meta name="viewport" content="initial-scale=1.0, width=device-width" />
-					<meta name="description" content={Description} />
-					<link href="https://fonts.googleapis.com/css?family=Special+Elite" rel="stylesheet" />
-					<meta property="og:url" content="https://sudoku.sitianliu.com/" />
-					<meta property="og:title" content="Sudoku Evolved" />
-					<meta property="og:type" content="website" />
-					<meta property="og:description" content={Description} />
-					<meta property="og:image" content="https://sudoku.sitianliu.com/static/og-image.png" />
-				</NextHead>
-				{!board && this.renderGenerationUI()}
-				{board && this.renderHeader()}
+				<NextHeader />
+				{!board && <GenerationUI generateGame={this.generateGame} />}
+				{board && <Header onClick={() => this.setState({ board: false })} />}
 				{board && (
 					<Board
 						board={this.state.board}
@@ -206,7 +123,7 @@ export default class Index extends Component {
 						}}
 					/>
 				)}
-				{board && this.renderControls()}
+				{board && <Controls board={board} selected={this.getSelectedCell()} fillNumber={this.fillNumber} fillNote={this.addNumberAsNote} history={history} undo={this.undo} redo={this.redo} erase={this.eraseSelected} solution={this.fillSelectedWithSolution} className="controls" />}
 				{/* language=CSS */}
 				<style jsx>
 					{`
